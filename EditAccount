@@ -1,0 +1,32 @@
+fun editAccount(isNetworkAvailable: Boolean, onChange*Low: (Boolean) -> Unit, onChange*High: (Boolean) -> Unit) {
+		if (data.hasNoErrors() && findWhatChanged().somethingChanged()) {
+			editAccountStatus = LoadingErrorSuccess(isLoading = true)
+			editAccount.execute(
+				accountId = accountId,
+				firstName = whatChanged.firstName,
+				lastName = whatChanged.lastName,
+				dateOfBirth = whatChanged.dateOfBirth,
+				gender = whatChanged.gender?.minus(1),
+				isNetworkAvailable = isNetworkAvailable
+			).onEach { dataState ->
+				if (dataState.data != null || dataState.error != null || dataState.code != null) {
+					editAccountStatus = LoadingErrorSuccess(isLoading = false, isSuccessful = true)
+				}
+
+				dataState.exception?.let { editAccountStatus = LoadingErrorSuccess(isLoading = false, isException = it) }
+
+				if (dataState.*Low) onChange*Low(true)
+				if (dataState.*High) {
+					editAccountStatus = LoadingErrorSuccess(isLoading = false, isFailed = 400)
+					onChange*High(true)
+				}
+
+				dataState.userErrors?.let {
+					editAccountStatus = LoadingErrorSuccess(isLoading = false)
+					data.setErrors(it)
+				}
+			}.launchIn(viewModelScope)
+		} else if (!whatChanged.somethingChanged()) {
+			showNothingChanged = true
+	}
+}
