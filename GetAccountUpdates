@@ -1,0 +1,17 @@
+private fun getAccountUpdates() {
+	getUpdatedAccountInfo.execute(accountId, isNetworkAvailable).onEach { dataState ->
+		if (dataState.data != null || dataState.error != null || dataState.code != null || dataState.exception != null) {
+			get*()
+		}
+
+		if (dataState.*Invalid) {
+			update*(::getAccountUpdates)
+		}
+
+		if (dataState.*Low) onChange*Low(true)
+		if (dataState.*High) {
+			stopAllLoading()
+			onChange*High(true)
+		}
+	}.launchIn(viewModelScope)
+}
