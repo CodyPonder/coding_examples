@@ -1,0 +1,46 @@
+class UpdateAiUsageDisclaimer(private val disclaimerDao: DisclaimerDao, private val disclaimerService: DisclaimerService) {
+
+	fun execute(
+		accountId: Int,
+		isChecked: Boolean,
+		isNetworkAvailable: Boolean
+	): Flow<DataState<Boolean>> = flow {
+		try {
+			// just for testing
+			if (BuildConfig.DEBUG && accountId == Int.MIN_VALUE) {
+				throw Exception(TEST_EXCEPTION)
+			}
+
+			val value = if (isChecked) 1 else 0
+			disclaimerDao.updateDisclaimer(value, Disclaimers./*DISCLAIMER*/.id, accountId, needsToUpdate = true)
+
+			if (isNetworkAvailable) {
+				emit(DataState.loading())
+				val response =
+					disclaimerService.updateDisclaimers2(
+						UpdateDisclaimersBody(
+							listOf(UpdateDisclaimersBody.DisclaimerItem(DisclaimerId./*DISCLAIMER*/.id, value))
+						)
+					)
+
+				if (response.isSuccessful && response.body() != null) {
+					is*Low(response.code(), this)
+					val updatedDisclaimer = response.body()!!.disclaimers.find { it.id == DisclaimerId./*DISCLAIMER*/.id }
+					if (updatedDisclaimer != null && updatedDisclaimer.value == value) {
+						disclaimerDao.updateNeedsToUpdate(false, DisclaimerId./*DISCLAIMER*/.id, accountId)
+						emit(DataState.success(true))
+					} else {
+						emit(DataState.success(true))
+					}
+				} else {
+					is*High(response.code(), this)
+				}
+			} else {
+				emit(DataState.success(true))
+			}
+		} catch (e: Exception) {
+			Timber.e(e)
+			emit(DataState.exception(e))
+		}
+	}
+}
