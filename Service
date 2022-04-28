@@ -1,0 +1,29 @@
+@Singleton
+@Provides
+@Named("token")
+fun provideToken(): String {
+  return token
+}
+
+private val loggingInterceptor =
+  if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
+  else HttpLoggingInterceptor.Level.NONE
+
+private val okHttpClient = OkHttpClient.Builder()
+  .addInterceptor(interceptor = Interceptor {
+    val request: Request = it.request().newBuilder().header("/*HEADER KEY*/", token).build()
+    return@Interceptor it.proceed(request)
+  })
+  .addInterceptor(HttpLoggingInterceptor().setLevel(loggingInterceptor))
+  .build()
+
+@Singleton
+@Provides
+fun provideDisclaimerService(): DisclaimerService {
+  return Retrofit.Builder()
+    .baseUrl(BuildConfig.BASE_URL)
+    .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
+    .client(okHttpClient)
+    .build()
+    .create(DisclaimerService::class.java)
+}
