@@ -1,0 +1,59 @@
+@Composable
+fun CustomOutlinedTextField(
+	modifier: Modifier = Modifier,
+	value: String,
+	onValueChanged: (String) -> Unit,
+	isEnabled: Boolean,
+	placeHolder: String,
+	errorText: String? = null,
+	label: String? = null,
+	leadingIcon: @Composable (() -> Unit)? = null,
+	trailingIcon: @Composable (() -> Unit)? = null,
+	isSingleLine: Boolean = true,
+	colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
+		focusedBorderColor = MaterialTheme.colors.BorderColorLight,
+		unfocusedBorderColor = MaterialTheme.colors.onBackground,
+		placeholderColor = MaterialTheme.colors.onBackground,
+		unfocusedLabelColor = Color.Gray
+	),
+	keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+	keyboardActions: KeyboardActions = KeyboardActions.Default,
+	visualTransformation: VisualTransformation? = null,
+	showHelperText: Boolean = false,
+	helperText: String? = null,
+	textStyle: TextStyle = TextStyle.Default,
+	maxLines: Int = 1
+) {
+	Column(modifier = modifier) {
+		OutlinedTextField(
+			value = value,
+			onValueChange = onValueChanged,
+			placeholder = { Text(text = placeHolder) },
+			label = { label?.let { Text(text = label) } },
+			leadingIcon = leadingIcon,
+			trailingIcon = trailingIcon,
+			singleLine = isSingleLine,
+			colors = colors,
+			keyboardOptions = keyboardOptions,
+			keyboardActions = keyboardActions,
+			enabled = isEnabled,
+			isError = errorText != null,
+			modifier = Modifier.fillMaxWidth(),
+			visualTransformation = visualTransformation?.let { visualTransformation } ?: VisualTransformation.None,
+			textStyle = textStyle,
+			maxLines = maxLines
+		)
+		if (showHelperText && helperText != null) {
+			Text(
+				text = helperText,
+				style = MaterialTheme.typography.caption,
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(start = 16.dp)
+			)
+		}
+		if (errorText != null) {
+			InputError(errorText)
+		}
+	}
+}
